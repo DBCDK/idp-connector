@@ -1,0 +1,15 @@
+{
+  "authenticated": true,
+  "rights": [
+    {
+      "productName": "EMNEORD",
+      "name": "READ",
+      "description": "Is allowed to read from Emneordsbasen"
+    },
+    {
+      "productName": "POSTHUS",
+      "name": "READ",
+      "description": "Is allowed to read from Posthus"
+    }
+  ]
+}

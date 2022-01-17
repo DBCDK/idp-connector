@@ -1,0 +1,24 @@
+{
+  "id": "ed98732e-3308-3065-a480-efb3af846e1e",
+  "request": {
+    "url": "/api/v1/authorize/",
+    "method": "POST",
+    "bodyPatterns": [
+      {
+        "equalToJson": "{\"userIdAut\":\"test\",\"passwordAut\":\"test\",\"agencyId\":\"test\"}",
+        "ignoreArrayOrder": true,
+        "ignoreExtraElements": true
+      }
+    ]
+  },
+  "response": {
+    "status": 200,
+    "bodyFileName": "body-api-v1-authorize-ba7FP.json",
+    "headers": {
+      "Server": "Payara Micro #badassfish",
+      "Content-Type": "application/json",
+      "X-Frame-Options": "SAMEORIGIN"
+    }
+  },
+  "uuid": "ed98732e-3308-3065-a480-efb3af846e1e"
+}
