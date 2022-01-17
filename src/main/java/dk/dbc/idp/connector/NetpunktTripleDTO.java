@@ -35,7 +35,7 @@ public class NetpunktTripleDTO {
     public String toString() {
         return "NetpunktTripleDTO{" +
                 "userIdAut='" + userIdAut + '\'' +
-                ", passwordAut='" + passwordAut + '\'' +
+                ", passwordAut='******'" +
                 ", agencyId='" + agencyId + '\'' +
                 '}';
     }
