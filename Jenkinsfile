@@ -43,7 +43,7 @@ pipeline {
 				branch "main"
 			}
 			steps {
-				sh "mvn -Dmaven.test.skip=true deploy:deploy"
+				sh "mvn jar:jar deploy:deploy"
 			}
 		}
 	}
