@@ -4,6 +4,7 @@ import dk.dbc.httpclient.FailSafeHttpClient;
 import dk.dbc.httpclient.HttpPost;
 import dk.dbc.invariant.InvariantUtil;
 import net.jodah.failsafe.RetryPolicy;
+import org.apache.commons.collections4.map.PassiveExpiringMap;
 
 import javax.ws.rs.ProcessingException;
 import javax.ws.rs.client.Client;
@@ -12,9 +13,14 @@ import java.time.Duration;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.concurrent.TimeUnit;
 
 public class IDPConnector {
     private static final String PATH_AUTHORIZE = "/api/v1/authorize/";
+
+    private static final int MAX_CACHE_AGE = 8;
+    private final PassiveExpiringMap<String, RightSet> rightsCache;
+
     /* Currently retry handling is disabled to retain backwards compatibility
      * with older versions of the FailSafeHttpClient in use in systems using
      * this connector.
@@ -32,16 +38,37 @@ public class IDPConnector {
         this(FailSafeHttpClient.create(client, RETRY_POLICY), idpBaseUrl);
     }
 
+    public IDPConnector(Client client, String idpBaseUrl, int cacheAge) {
+        this(FailSafeHttpClient.create(client, RETRY_POLICY), idpBaseUrl, cacheAge);
+    }
+
     public IDPConnector(FailSafeHttpClient failSafeHttpClient, String idpBaseUrl) {
         this.failSafeHttpClient = InvariantUtil.checkNotNullOrThrow(failSafeHttpClient, "failSafeHttpClient");
         this.baseUrl = InvariantUtil.checkNotNullNotEmptyOrThrow(idpBaseUrl, "idpBaseUrl");
+        this.rightsCache = new PassiveExpiringMap<>(MAX_CACHE_AGE, TimeUnit.HOURS);
+    }
+
+    public IDPConnector(FailSafeHttpClient failSafeHttpClient, String idpBaseUrl, int cacheAge) {
+        this.failSafeHttpClient = InvariantUtil.checkNotNullOrThrow(failSafeHttpClient, "failSafeHttpClient");
+        this.baseUrl = InvariantUtil.checkNotNullNotEmptyOrThrow(idpBaseUrl, "idpBaseUrl");
+        this.rightsCache = new PassiveExpiringMap<>(cacheAge, TimeUnit.HOURS);
     }
 
     public void close() {
         failSafeHttpClient.getClient().close();
     }
 
+    private String createRightSetCacheKey(String user, String group, String password) {
+        return String.format("%s_%s_%s", user, group, password);
+    }
+
     public RightSet lookupRight(final String user, final String group, final String password) throws IDPConnectorException {
+        final String cacheKey = createRightSetCacheKey(user, group, password);
+        RightSet result = this.rightsCache.get(cacheKey);
+        if (result != null) {
+            return result;
+        }
+
         final NetpunktTripleDTO netpunktTripleDTO = new NetpunktTripleDTO();
         netpunktTripleDTO.setAgencyId(group);
         netpunktTripleDTO.setUserIdAut(user);
@@ -56,17 +83,17 @@ public class IDPConnector {
 
         final AuthorizeResponse authorizeResponse = readResponseEntity(response, AuthorizeResponse.class);
 
-        final RightSet rightSet = new RightSet();
+        result = new RightSet();
 
-        if (!authorizeResponse.isAuthenticated()) {
-            return rightSet;
+        if (authorizeResponse.isAuthenticated()) {
+            for (IDPRights idpRight : authorizeResponse.getRights()) {
+                result.add(idpRight.getProductName(), idpRight.getName());
+            }
         }
 
-        for (IDPRights idpRight : authorizeResponse.getRights()) {
-            rightSet.add(idpRight.getProductName(), idpRight.getName());
-        }
+        this.rightsCache.put(cacheKey, result);
 
-        return rightSet;
+        return result;
     }
 
     private void assertResponseStatus(Response response, Response.Status... expectedStatus)

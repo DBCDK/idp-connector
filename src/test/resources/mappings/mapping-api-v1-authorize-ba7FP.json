@@ -5,7 +5,7 @@
     "method": "POST",
     "bodyPatterns": [
       {
-        "equalToJson": "{\"userIdAut\":\"test\",\"passwordAut\":\"test\",\"agencyId\":\"test\"}",
+        "equalToJson": "{\"userIdAut\":\"test\",\"agencyId\":\"test\"}",
         "ignoreArrayOrder": true,
         "ignoreExtraElements": true
       }

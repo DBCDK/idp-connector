@@ -35,7 +35,7 @@ class IDPConnectorTest {
 
     @BeforeAll
     static void setConnector() {
-        connector = new IDPConnector(CLIENT, wireMockHost);
+        connector = new IDPConnector(CLIENT, wireMockHost, 0);
     }
 
     @AfterAll
