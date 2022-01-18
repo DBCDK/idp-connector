@@ -59,8 +59,10 @@ class IDPConnectorTest {
         assertThat(rightSet.rights.isEmpty(), is(false));
         assertThat(rightSet.hasRightName("POSTHUS"), is(true));
         assertThat(rightSet.hasRight("POSTHUS", "READ"), is(true));
+        assertThat(rightSet.hasRight("POSTHUS", "WRITE"), is(false));
         assertThat(rightSet.hasRightName("EMNEORD"), is(true));
         assertThat(rightSet.hasRight("EMNEORD", "READ"), is(true));
+        assertThat(rightSet.hasRight("EMNEORD", "WRITE"), is(false));
         assertThat(rightSet.hasRightName("BOB"), is(false));
         assertThat(rightSet.hasRight("BOB", "READ"), is(false));
     }
