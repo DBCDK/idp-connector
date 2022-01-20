@@ -1,11 +1,11 @@
 {
-  "id": "a3f60dca-04fd-39b3-825e-43e6eec3fa94",
+  "id": "ed98732e-3308-3065-a480-efb3af846e1e",
   "request": {
     "url": "/api/v1/authorize/",
     "method": "POST",
     "bodyPatterns": [
       {
-        "equalToJson": "{\"userIdAut\":\"realuser\",\"passwordAut\":\"realpassword\",\"agencyId\":\"realgroup\"}",
+        "equalToJson": "{\"userIdAut\":\"test\",\"agencyId\":\"test\"}",
         "ignoreArrayOrder": true,
         "ignoreExtraElements": true
       }
@@ -13,12 +13,12 @@
   },
   "response": {
     "status": 200,
-    "bodyFileName": "body-api-v1-authorize-bfVo1.json",
+    "bodyFileName": "body-api-v1-authorize-test.json",
     "headers": {
       "Server": "Payara Micro #badassfish",
       "Content-Type": "application/json",
       "X-Frame-Options": "SAMEORIGIN"
     }
   },
-  "uuid": "a3f60dca-04fd-39b3-825e-43e6eec3fa94"
+  "uuid": "ed98732e-3308-3065-a480-efb3af846e1e"
 }

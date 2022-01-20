@@ -5,7 +5,7 @@
     "method": "POST",
     "bodyPatterns": [
       {
-        "equalToJson": "{\"userIdAut\":\"test\",\"agencyId\":\"test\"}",
+        "equalToJson": "{\"userIdAut\":\"norights\",\"agencyId\":\"norights\"}",
         "ignoreArrayOrder": true,
         "ignoreExtraElements": true
       }
@@ -13,7 +13,7 @@
   },
   "response": {
     "status": 200,
-    "bodyFileName": "body-api-v1-authorize-ba7FP.json",
+    "bodyFileName": "body-api-v1-authorize-no-rights.json",
     "headers": {
       "Server": "Payara Micro #badassfish",
       "Content-Type": "application/json",

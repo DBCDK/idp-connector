@@ -85,7 +85,7 @@ public class IDPConnector {
 
         result = new RightSet();
 
-        if (authorizeResponse.isAuthenticated()) {
+        if (authorizeResponse.isAuthenticated() && authorizeResponse.getRights() != null) {
             for (IDPRights idpRight : authorizeResponse.getRights()) {
                 result.add(idpRight.getProductName(), idpRight.getName());
             }
