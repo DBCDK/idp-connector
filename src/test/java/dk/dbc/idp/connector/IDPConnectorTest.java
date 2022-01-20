@@ -44,7 +44,7 @@ class IDPConnectorTest {
     }
 
     @Test
-    void noRights() throws IDPConnectorException {
+    void notAuthenticated() throws IDPConnectorException {
         IDPConnector.RightSet rightSet = connector.lookupRight("test", "test", "test");
 
         assertThat(rightSet.rights.isEmpty(), is(true));
@@ -53,7 +53,7 @@ class IDPConnectorTest {
     }
 
     @Test
-    void hasRights() throws IDPConnectorException {
+    void authenticatedAndHasRights() throws IDPConnectorException {
         IDPConnector.RightSet rightSet = connector.lookupRight("realuser", "realgroup", "realpassword");
 
         assertThat(rightSet.rights.isEmpty(), is(false));
@@ -65,6 +65,15 @@ class IDPConnectorTest {
         assertThat(rightSet.hasRight("EMNEORD", "WRITE"), is(false));
         assertThat(rightSet.hasRightName("BOB"), is(false));
         assertThat(rightSet.hasRight("BOB", "READ"), is(false));
+    }
+
+    @Test
+    void authenticatedButNoRights()throws IDPConnectorException {
+        IDPConnector.RightSet rightSet = connector.lookupRight("norights", "norights", "norights");
+
+        assertThat(rightSet.rights.isEmpty(), is(true));
+        assertThat(rightSet.hasRightName("POSTHUS"), is(false));
+        assertThat(rightSet.hasRight("POSTHUS", "READ"), is(false));
     }
 
 }
