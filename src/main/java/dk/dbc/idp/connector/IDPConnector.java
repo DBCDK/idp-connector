@@ -5,6 +5,8 @@ import dk.dbc.httpclient.HttpPost;
 import dk.dbc.invariant.InvariantUtil;
 import net.jodah.failsafe.RetryPolicy;
 import org.apache.commons.collections4.map.PassiveExpiringMap;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.ProcessingException;
 import javax.ws.rs.client.Client;
@@ -16,9 +18,10 @@ import java.util.HashSet;
 import java.util.concurrent.TimeUnit;
 
 public class IDPConnector {
+    private static final Logger LOGGER = LoggerFactory.getLogger(IDPConnector.class);
     private static final String PATH_AUTHORIZE = "/api/v1/authorize/";
-
     private static final int MAX_CACHE_AGE = 8;
+
     private final PassiveExpiringMap<String, RightSet> rightsCache;
 
     /* Currently retry handling is disabled to retain backwards compatibility
@@ -63,11 +66,18 @@ public class IDPConnector {
     }
 
     public RightSet lookupRight(final String user, final String group, final String password) throws IDPConnectorException {
+        InvariantUtil.checkNotNullNotEmptyOrThrow(user, "user");
+        InvariantUtil.checkNotNullNotEmptyOrThrow(group, "group");
+        InvariantUtil.checkNotNullNotEmptyOrThrow(password, "password");
+
         final String cacheKey = createRightSetCacheKey(user, group, password);
         RightSet result = this.rightsCache.get(cacheKey);
         if (result != null) {
+            LOGGER.info("Found cached rights for {}/{}", group, user);
             return result;
         }
+
+        LOGGER.info("Fetching rights for {}/{}", group, user);
 
         final NetpunktTripleDTO netpunktTripleDTO = new NetpunktTripleDTO();
         netpunktTripleDTO.setAgencyId(group);

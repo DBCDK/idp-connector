@@ -14,6 +14,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.configureFor;
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.options;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class IDPConnectorTest {
 
@@ -68,12 +69,22 @@ class IDPConnectorTest {
     }
 
     @Test
-    void authenticatedButNoRights()throws IDPConnectorException {
+    void authenticatedButNoRights() throws IDPConnectorException {
         IDPConnector.RightSet rightSet = connector.lookupRight("norights", "norights", "norights");
 
         assertThat(rightSet.rights.isEmpty(), is(true));
         assertThat(rightSet.hasRightName("POSTHUS"), is(false));
         assertThat(rightSet.hasRight("POSTHUS", "READ"), is(false));
+    }
+
+    @Test
+    void emptyArguments() {
+        assertThrows(NullPointerException.class, () -> connector.lookupRight("user", "group", null), "Value of parameter 'password' cannot be null");
+        assertThrows(IllegalArgumentException.class, () -> connector.lookupRight("user", "group", ""), "Value of parameter 'password' cannot be empty");
+        assertThrows(NullPointerException.class, () -> connector.lookupRight("user", null, "password"), "Value of parameter 'group' cannot be null");
+        assertThrows(IllegalArgumentException.class, () -> connector.lookupRight("user", "", "password"), "Value of parameter 'group' cannot be empty");
+        assertThrows(NullPointerException.class, () -> connector.lookupRight(null, "group", "password"), "Value of parameter 'user' cannot be null");
+        assertThrows(IllegalArgumentException.class, () -> connector.lookupRight("", "group", "password"), "Value of parameter 'user' cannot be empty");
     }
 
 }
