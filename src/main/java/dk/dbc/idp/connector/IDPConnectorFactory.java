@@ -51,15 +51,27 @@ public class IDPConnectorFactory {
         return new IDPConnector(client, idpBaseUrl);
     }
 
+    public static IDPConnector create(String idpBaseUrl, int cacheAge) {
+        final Client client = HttpClient.newClient(new ClientConfig()
+                .register(new JacksonConfig())
+                .register(new JacksonFeature()));
+        LOGGER.info("Creating IDPConnector for: {}", idpBaseUrl);
+        return new IDPConnector(client, idpBaseUrl, cacheAge);
+    }
+
     @Inject
     @ConfigProperty(name = "IDP_SERVICE_URL")
     private String idpBaseUrl;
+
+    @Inject
+    @ConfigProperty(name = "IDP_CACHE_AGE", defaultValue = "8")
+    private int cacheAge;
 
     IDPConnector idpConnector;
 
     @PostConstruct
     public void initializeConnector() {
-        idpConnector = IDPConnectorFactory.create(idpBaseUrl);
+        idpConnector = IDPConnectorFactory.create(idpBaseUrl, cacheAge);
     }
 
     @Produces
