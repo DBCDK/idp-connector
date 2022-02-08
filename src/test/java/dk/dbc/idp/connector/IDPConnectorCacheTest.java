@@ -44,6 +44,28 @@ class IDPConnectorCacheTest {
     }
 
     @Test
+    void cacheTestAuthenticateFalse() throws IDPConnectorException {
+        wireMockServer.resetRequests();
+
+        connector.authenticate("test", "test", "test");
+        connector.authenticate("test", "test", "test");
+        connector.authenticate("test", "test", "test");
+
+        verify(1, new RequestPatternBuilder().withUrl("/api/v1/authenticate/"));
+    }
+
+    @Test
+    void cacheTestAuthenticateFalseTrue() throws IDPConnectorException {
+        wireMockServer.resetRequests();
+
+        connector.authenticate("realuser", "realgroup", "realpassword");
+        connector.authenticate("realuser", "realgroup", "realpassword");
+        connector.authenticate("realuser", "realgroup", "realpassword");
+
+        verify(1, new RequestPatternBuilder().withUrl("/api/v1/authenticate/"));
+    }
+
+    @Test
     void cacheHitForUnauthorized() throws IDPConnectorException {
         wireMockServer.resetRequests();
 

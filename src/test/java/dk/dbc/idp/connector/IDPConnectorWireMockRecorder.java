@@ -5,7 +5,7 @@ public class IDPConnectorWireMockRecorder {
         Steps to reproduce wiremock recording:
 
         * Start standalone runner
-            java -jar wiremock-standalone-{WIRE_MOCK_VERSION}.jar --proxy-all="{RECORD_SERVICE_HOST}" --record-mappings --verbose
+            java -jar wiremock-standalone-{WIRE_MOCK_VERSION}.jar --proxy-all="{IDP_SERVICE_HOST}" --record-mappings --verbose
 
         * Run the main method of this class
 
@@ -22,6 +22,7 @@ public class IDPConnectorWireMockRecorder {
     }
 
     private static void idpConnectorTests(IDPConnectorTest idpConnectorTest) throws IDPConnectorException {
+        idpConnectorTest.testAuthenticate();
         idpConnectorTest.notAuthenticated();
         idpConnectorTest.authenticatedAndHasRights();
         idpConnectorTest.authenticatedButNoRights();

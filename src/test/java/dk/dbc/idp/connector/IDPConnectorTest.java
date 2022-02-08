@@ -45,6 +45,12 @@ class IDPConnectorTest {
     }
 
     @Test
+    void testAuthenticate() throws IDPConnectorException {
+        assertThat(connector.authenticate("test", "test", "test"), is(false));
+        assertThat(connector.authenticate("realuser", "realgroup", "realpassword"), is(true));
+    }
+
+    @Test
     void notAuthenticated() throws IDPConnectorException {
         IDPConnector.RightSet rightSet = connector.lookupRight("test", "test", "test");
 
@@ -78,7 +84,7 @@ class IDPConnectorTest {
     }
 
     @Test
-    void emptyArguments() {
+    void emptyArgumentsAuthorize() {
         assertThrows(NullPointerException.class, () -> connector.lookupRight("user", "group", null), "Value of parameter 'password' cannot be null");
         assertThrows(IllegalArgumentException.class, () -> connector.lookupRight("user", "group", ""), "Value of parameter 'password' cannot be empty");
         assertThrows(NullPointerException.class, () -> connector.lookupRight("user", null, "password"), "Value of parameter 'group' cannot be null");
@@ -86,5 +92,16 @@ class IDPConnectorTest {
         assertThrows(NullPointerException.class, () -> connector.lookupRight(null, "group", "password"), "Value of parameter 'user' cannot be null");
         assertThrows(IllegalArgumentException.class, () -> connector.lookupRight("", "group", "password"), "Value of parameter 'user' cannot be empty");
     }
+
+    @Test
+    void emptyArgumentsAuthenticate() {
+        assertThrows(NullPointerException.class, () -> connector.authenticate("user", "group", null), "Value of parameter 'password' cannot be null");
+        assertThrows(IllegalArgumentException.class, () -> connector.authenticate("user", "group", ""), "Value of parameter 'password' cannot be empty");
+        assertThrows(NullPointerException.class, () -> connector.authenticate("user", null, "password"), "Value of parameter 'group' cannot be null");
+        assertThrows(IllegalArgumentException.class, () -> connector.authenticate("user", "", "password"), "Value of parameter 'group' cannot be empty");
+        assertThrows(NullPointerException.class, () -> connector.authenticate(null, "group", "password"), "Value of parameter 'user' cannot be null");
+        assertThrows(IllegalArgumentException.class, () -> connector.authenticate("", "group", "password"), "Value of parameter 'user' cannot be empty");
+    }
+
 
 }
