@@ -3,6 +3,7 @@ package dk.dbc.idp.connector;
 import dk.dbc.httpclient.FailSafeHttpClient;
 import dk.dbc.httpclient.HttpPost;
 import dk.dbc.invariant.InvariantUtil;
+import dk.dbc.util.Stopwatch;
 import net.jodah.failsafe.RetryPolicy;
 import org.apache.commons.collections4.map.PassiveExpiringMap;
 import org.slf4j.Logger;
@@ -24,7 +25,7 @@ public class IDPConnector {
 
     private final PassiveExpiringMap<String, RightSet> rightsCache;
 
-    /* Currently retry handling is disabled to retain backwards compatibility
+    /* Currently, retry handling is disabled to retain backwards compatibility
      * with older versions of the FailSafeHttpClient in use in systems using
      * this connector.
      */
@@ -84,14 +85,7 @@ public class IDPConnector {
         netpunktTripleDTO.setUserIdAut(user);
         netpunktTripleDTO.setPasswordAut(password);
 
-        final HttpPost httpPost = new HttpPost(failSafeHttpClient)
-                .withBaseUrl(baseUrl)
-                .withPathElements(PATH_AUTHORIZE)
-                .withJsonData(netpunktTripleDTO);
-        final Response response = httpPost.execute();
-        assertResponseStatus(response, Response.Status.OK);
-
-        final AuthorizeResponse authorizeResponse = readResponseEntity(response, AuthorizeResponse.class);
+        final AuthorizeResponse authorizeResponse = postRequest(PATH_AUTHORIZE, netpunktTripleDTO, AuthorizeResponse.class);
 
         result = new RightSet();
 
@@ -104,6 +98,26 @@ public class IDPConnector {
         this.rightsCache.put(cacheKey, result);
 
         return result;
+    }
+
+    private <T> T postRequest(String basePath,
+                              NetpunktTripleDTO data,
+                              Class<T> type) throws IDPConnectorException {
+        final Stopwatch stopwatch = new Stopwatch();
+        try {
+            final HttpPost httpPost = new HttpPost(failSafeHttpClient)
+                    .withBaseUrl(baseUrl)
+                    .withPathElements(basePath)
+                    .withData(data, "application/json")
+                    .withHeader("Accept", "application/json");
+            final Response response = httpPost.execute();
+            assertResponseStatus(response, Response.Status.OK);
+            return readResponseEntity(response, type);
+        } finally {
+            LOGGER.info("POST /{} took {} milliseconds",
+                    basePath,
+                    stopwatch.getElapsedTime(TimeUnit.MILLISECONDS));
+        }
     }
 
     private void assertResponseStatus(Response response, Response.Status... expectedStatus)
