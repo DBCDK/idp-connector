@@ -1,0 +1,24 @@
+{
+  "id": "490e744b-be93-39f4-abbf-cbe2920286f7",
+  "request": {
+    "url": "/api/v1/authenticate/",
+    "method": "POST",
+    "bodyPatterns": [
+      {
+        "equalToJson": "{\"userIdAut\":\"realuser\",\"passwordAut\":\"realpassword\",\"agencyId\":\"realgroup\"}",
+        "ignoreArrayOrder": true,
+        "ignoreExtraElements": true
+      }
+    ]
+  },
+  "response": {
+    "status": 200,
+    "bodyFileName": "body-api-v1-authenticate-jwiqY.json",
+    "headers": {
+      "Server": "Payara Micro #badassfish",
+      "Content-Type": "application/json",
+      "X-Frame-Options": "SAMEORIGIN"
+    }
+  },
+  "uuid": "490e744b-be93-39f4-abbf-cbe2920286f7"
+}
