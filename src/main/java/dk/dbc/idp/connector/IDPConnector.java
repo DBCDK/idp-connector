@@ -58,8 +58,8 @@ public class IDPConnector {
     public IDPConnector(FailSafeHttpClient failSafeHttpClient, String idpBaseUrl, int cacheAge) {
         this.failSafeHttpClient = InvariantUtil.checkNotNullOrThrow(failSafeHttpClient, "failSafeHttpClient");
         this.baseUrl = InvariantUtil.checkNotNullNotEmptyOrThrow(idpBaseUrl, "idpBaseUrl");
-        this.authenticateCache = new PassiveExpiringMap<>(MAX_CACHE_AGE, TimeUnit.HOURS);
-        this.authorizeCache = new PassiveExpiringMap<>(MAX_CACHE_AGE, TimeUnit.HOURS);
+        this.authenticateCache = new PassiveExpiringMap<>(cacheAge, TimeUnit.HOURS);
+        this.authorizeCache = new PassiveExpiringMap<>(cacheAge, TimeUnit.HOURS);
     }
 
     public void close() {
