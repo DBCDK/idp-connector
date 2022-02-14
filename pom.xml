@@ -34,6 +34,7 @@
             <artifactId>microprofile</artifactId>
             <version>${microprofile.version}</version>
             <type>pom</type>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.glassfish.jersey.core</groupId>
