@@ -34,7 +34,7 @@ public class IDPConnector {
     private static final RetryPolicy<Response> RETRY_POLICY = new RetryPolicy<Response>()
             .handle(ProcessingException.class)
             .handleResultIf(response -> response.getStatus() == 500)
-            .withDelay(Duration.ofSeconds(5))
+            .withDelay(Duration.ofSeconds(1))
             .withMaxRetries(3);
 
     private final FailSafeHttpClient failSafeHttpClient;
@@ -148,10 +148,15 @@ public class IDPConnector {
         final Response.Status actualStatus =
                 Response.Status.fromStatusCode(response.getStatus());
         if (!Arrays.asList(expectedStatus).contains(actualStatus)) {
-            // TODO Handle exception from IDP better?
-            throw new IDPConnectorUnexpectedStatusCodeException(
-                    String.format("IDP service returned with unexpected status code: %s", actualStatus),
-                    response.getStatus());
+            try {
+                final MessageDTO messageDTO = response.readEntity(MessageDTO.class);
+                throw new IDPConnectorException(String.format("Exception from IDP with status code %s and message '%s'",
+                        response.getStatus(), messageDTO.getMessage()));
+            } catch (ProcessingException e) {
+                throw new IDPConnectorUnexpectedStatusCodeException(
+                        String.format("IDP service returned with unexpected status code: %s", actualStatus),
+                        response.getStatus());
+            }
         }
     }
 
