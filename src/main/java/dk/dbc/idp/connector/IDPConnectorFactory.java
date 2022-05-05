@@ -85,7 +85,7 @@ public class IDPConnectorFactory {
     private Duration connectionTimeout;
 
     @Inject
-    @ConfigProperty(name = "IDP_READ_TIMEOUT_DURATION", defaultValue = "PT0.5S")
+    @ConfigProperty(name = "IDP_READ_TIMEOUT_DURATION", defaultValue = "PT3.0S")
     private Duration readTimeout;
 
     IDPConnector idpConnector;
