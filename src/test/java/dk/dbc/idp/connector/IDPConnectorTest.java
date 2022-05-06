@@ -103,5 +103,14 @@ class IDPConnectorTest {
         assertThrows(IllegalArgumentException.class, () -> connector.authenticate("", "group", "password"), "Value of parameter 'user' cannot be empty");
     }
 
+    @Test
+    void testExceptionHandling() {
+        final IDPConnectorException exception = assertThrows(
+                IDPConnectorException.class,
+                () -> connector.lookupRight("error", "error", "error")
+        );
+
+        assertThat(exception.getMessage(), is("Exception from IDP with status code 500 and message 'PersistenceException'"));
+    }
 
 }
