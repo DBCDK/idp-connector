@@ -1,7 +1,5 @@
 {
   "authenticated": true,
-  "agencyId": "realgroup",
-  "identity": "realuser",
   "rights": [
     {
       "productName": "EMNEORD",

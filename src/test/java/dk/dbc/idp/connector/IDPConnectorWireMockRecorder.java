@@ -24,7 +24,7 @@ public class IDPConnectorWireMockRecorder {
     private static void idpConnectorTests(IDPConnectorTest idpConnectorTest) throws IDPConnectorException {
         idpConnectorTest.testAuthenticate();
         idpConnectorTest.notAuthenticated();
-        idpConnectorTest.authenticatedAndHasRights();
-        idpConnectorTest.authenticatedButNoRights();
+        idpConnectorTest.authorizeHasRights();
+        idpConnectorTest.authorizeButNoRights();
     }
 }

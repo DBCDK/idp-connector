@@ -1,3 +1,5 @@
 {
-  "authenticated": true
+  "authenticated": true,
+  "agencyId": "realgroup",
+  "identity": "realuser"
 }

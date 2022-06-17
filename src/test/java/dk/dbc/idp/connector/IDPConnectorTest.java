@@ -60,7 +60,7 @@ class IDPConnectorTest {
     }
 
     @Test
-    void authenticatedAndHasRights() throws IDPConnectorException {
+    void authorizeHasRights() throws IDPConnectorException {
         IDPConnector.RightSet rightSet = connector.lookupRight("realuser", "realgroup", "realpassword");
 
         assertThat(rightSet.rights.isEmpty(), is(false));
@@ -74,8 +74,25 @@ class IDPConnectorTest {
         assertThat(rightSet.hasRight("BOB", "READ"), is(false));
     }
 
+    // This is a temporary test to make sure the connector works both with and without the agencyId and identity
+    // properties in the response. The test should be deleted when this is July 2022 or later
     @Test
-    void authenticatedButNoRights() throws IDPConnectorException {
+    void authorizeHasRightsMissingProperty() throws IDPConnectorException {
+        IDPConnector.RightSet rightSet = connector.lookupRight("missingproperty", "missingproperty", "missingproperty");
+
+        assertThat(rightSet.rights.isEmpty(), is(false));
+        assertThat(rightSet.hasRightName("POSTHUS"), is(true));
+        assertThat(rightSet.hasRight("POSTHUS", "READ"), is(true));
+        assertThat(rightSet.hasRight("POSTHUS", "WRITE"), is(false));
+        assertThat(rightSet.hasRightName("EMNEORD"), is(true));
+        assertThat(rightSet.hasRight("EMNEORD", "READ"), is(true));
+        assertThat(rightSet.hasRight("EMNEORD", "WRITE"), is(false));
+        assertThat(rightSet.hasRightName("BOB"), is(false));
+        assertThat(rightSet.hasRight("BOB", "READ"), is(false));
+    }
+
+    @Test
+    void authorizeButNoRights() throws IDPConnectorException {
         IDPConnector.RightSet rightSet = connector.lookupRight("norights", "norights", "norights");
 
         assertThat(rightSet.rights.isEmpty(), is(true));
