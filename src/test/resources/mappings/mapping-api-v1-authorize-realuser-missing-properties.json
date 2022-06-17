@@ -1,0 +1,24 @@
+{
+  "id": "a3f60dca-04fd-39b3-825e-43e6eec3fa94",
+  "request": {
+    "url": "/api/v1/authorize/",
+    "method": "POST",
+    "bodyPatterns": [
+      {
+        "equalToJson": "{\"userIdAut\":\"missingproperty\",\"passwordAut\":\"missingproperty\",\"agencyId\":\"missingproperty\"}",
+        "ignoreArrayOrder": true,
+        "ignoreExtraElements": true
+      }
+    ]
+  },
+  "response": {
+    "status": 200,
+    "bodyFileName": "body-api-v1-authorize-realuser-missing-properties.json",
+    "headers": {
+      "Server": "Payara Micro #badassfish",
+      "Content-Type": "application/json",
+      "X-Frame-Options": "SAMEORIGIN"
+    }
+  },
+  "uuid": "a3f60dca-04fd-39b3-825e-43e6eec3fa94"
+}
