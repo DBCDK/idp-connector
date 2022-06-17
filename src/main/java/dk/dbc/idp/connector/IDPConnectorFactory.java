@@ -1,8 +1,6 @@
 package dk.dbc.idp.connector;
 
-import dk.dbc.httpclient.HttpClient;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
-import org.glassfish.jersey.client.ClientConfig;
 import org.glassfish.jersey.jackson.JacksonFeature;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,6 +11,9 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.Produces;
 import javax.inject.Inject;
 import javax.ws.rs.client.Client;
+import javax.ws.rs.client.ClientBuilder;
+import java.time.Duration;
+import java.util.concurrent.TimeUnit;
 
 /**
  * IDP service connector factory
@@ -44,18 +45,30 @@ public class IDPConnectorFactory {
     private static final Logger LOGGER = LoggerFactory.getLogger(IDPConnectorFactory.class);
 
     public static IDPConnector create(String idpBaseUrl) {
-        final Client client = HttpClient.newClient(new ClientConfig()
-                .register(new JacksonConfig())
-                .register(new JacksonFeature()));
-        LOGGER.info("Creating IDPConnector for: {}", idpBaseUrl);
-        return new IDPConnector(client, idpBaseUrl);
+        return create(idpBaseUrl, 1000, Duration.ofMillis(500), Duration.ofMillis(500));
     }
 
     public static IDPConnector create(String idpBaseUrl, int cacheAge) {
-        final Client client = HttpClient.newClient(new ClientConfig()
+        return create(idpBaseUrl, cacheAge, Duration.ofMillis(500), Duration.ofMillis(500));
+    }
+
+    public static IDPConnector create(String idpBaseUrl, int connectionTimeout, int readTimeout) {
+        final Client client = ClientBuilder.newBuilder()
+                .connectTimeout(connectionTimeout, TimeUnit.MILLISECONDS)
+                .readTimeout(readTimeout, TimeUnit.MILLISECONDS).build()
                 .register(new JacksonConfig())
-                .register(new JacksonFeature()));
-        LOGGER.info("Creating IDPConnector for: {}", idpBaseUrl);
+                .register(new JacksonFeature());
+        LOGGER.info("Creating IDPConnector for: {}, with connection timeout: {}, and read timeout: {}", idpBaseUrl, connectionTimeout, readTimeout);
+        return new IDPConnector(client, idpBaseUrl);
+    }
+
+    public static IDPConnector create(String idpBaseUrl, int cacheAge, Duration connectionTimeout, Duration readTimeout) {
+        final Client client = ClientBuilder.newBuilder()
+                .connectTimeout(connectionTimeout.toMillis(), TimeUnit.MILLISECONDS)
+                .readTimeout(readTimeout.toMillis(), TimeUnit.MILLISECONDS).build()
+                .register(new JacksonConfig())
+                .register(new JacksonFeature());
+        LOGGER.info("Creating IDPConnector for: {}, with connection timeout: {}, and read timeout: {}", idpBaseUrl, connectionTimeout, readTimeout);
         return new IDPConnector(client, idpBaseUrl, cacheAge);
     }
 
@@ -67,11 +80,19 @@ public class IDPConnectorFactory {
     @ConfigProperty(name = "IDP_CACHE_AGE", defaultValue = "8")
     private int cacheAge;
 
+    @Inject
+    @ConfigProperty(name = "IDP_CONNECT_TIMEOUT_DURATION", defaultValue = "PT0.5S")
+    private Duration connectionTimeout;
+
+    @Inject
+    @ConfigProperty(name = "IDP_READ_TIMEOUT_DURATION", defaultValue = "PT3.0S")
+    private Duration readTimeout;
+
     IDPConnector idpConnector;
 
     @PostConstruct
     public void initializeConnector() {
-        idpConnector = IDPConnectorFactory.create(idpBaseUrl, cacheAge);
+        idpConnector = IDPConnectorFactory.create(idpBaseUrl, cacheAge, connectionTimeout, readTimeout);
     }
 
     @Produces
