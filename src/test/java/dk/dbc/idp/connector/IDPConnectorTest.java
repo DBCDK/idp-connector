@@ -1,6 +1,7 @@
 package dk.dbc.idp.connector;
 
 import com.github.tomakehurst.wiremock.WireMockServer;
+import dk.dbc.commons.useragent.UserAgent;
 import dk.dbc.httpclient.HttpClient;
 import org.glassfish.jersey.client.ClientConfig;
 import org.glassfish.jersey.jackson.JacksonFeature;
@@ -36,7 +37,8 @@ class IDPConnectorTest {
 
     @BeforeAll
     static void setConnector() {
-        connector = new IDPConnector(CLIENT, wireMockHost, 0);
+        final UserAgent userAgent = new UserAgent("IDPConnectorTest");
+        connector = new IDPConnector(CLIENT, userAgent, wireMockHost, 0);
     }
 
     @AfterAll

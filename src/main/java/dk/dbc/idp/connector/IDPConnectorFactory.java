@@ -1,10 +1,6 @@
 package dk.dbc.idp.connector;
 
-import org.eclipse.microprofile.config.inject.ConfigProperty;
-import org.glassfish.jersey.jackson.JacksonFeature;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
+import dk.dbc.commons.useragent.UserAgent;
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -12,6 +8,11 @@ import jakarta.enterprise.inject.Produces;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.client.Client;
 import jakarta.ws.rs.client.ClientBuilder;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
+import org.glassfish.jersey.jackson.JacksonFeature;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 
@@ -59,7 +60,7 @@ public class IDPConnectorFactory {
                 .register(new JacksonConfig())
                 .register(new JacksonFeature());
         LOGGER.info("Creating IDPConnector for: {}, with connection timeout: {}, and read timeout: {}", idpBaseUrl, connectionTimeout, readTimeout);
-        return new IDPConnector(client, idpBaseUrl);
+        return new IDPConnector(client, UserAgent.forInternalRequests(), idpBaseUrl);
     }
 
     public static IDPConnector create(String idpBaseUrl, int cacheAge, Duration connectionTimeout, Duration readTimeout) {
@@ -69,7 +70,7 @@ public class IDPConnectorFactory {
                 .register(new JacksonConfig())
                 .register(new JacksonFeature());
         LOGGER.info("Creating IDPConnector for: {}, with connection timeout: {}, and read timeout: {}", idpBaseUrl, connectionTimeout, readTimeout);
-        return new IDPConnector(client, idpBaseUrl, cacheAge);
+        return new IDPConnector(client, UserAgent.forInternalRequests(), idpBaseUrl, cacheAge);
     }
 
     @Inject

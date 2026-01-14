@@ -1,5 +1,5 @@
 {
-  "id": "ed98732e-3308-3065-a480-efb3af846e1e",
+  "id": "7b2e1c4a-1f3d-4b2a-9c8e-2a7e5b6c8d12",
   "request": {
     "url": "/api/v1/authorize/",
     "method": "POST",
@@ -20,5 +20,5 @@
       "X-Frame-Options": "SAMEORIGIN"
     }
   },
-  "uuid": "ed98732e-3308-3065-a480-efb3af846e1e"
+  "uuid": "7b2e1c4a-1f3d-4b2a-9c8e-2a7e5b6c8d12"
 }
