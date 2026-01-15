@@ -1,24 +1,29 @@
 package dk.dbc.idp.connector;
 
+import dk.dbc.commons.useragent.UserAgent;
 import dk.dbc.httpclient.FailSafeHttpClient;
 import dk.dbc.httpclient.HttpPost;
-import dk.dbc.invariant.InvariantUtil;
-import dk.dbc.util.Stopwatch;
-import net.jodah.failsafe.RetryPolicy;
-import org.apache.commons.collections4.map.PassiveExpiringMap;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import jakarta.ws.rs.ProcessingException;
 import jakarta.ws.rs.client.Client;
 import jakarta.ws.rs.core.Response;
+import net.jodah.failsafe.RetryPolicy;
+import org.apache.commons.collections4.map.PassiveExpiringMap;
+import org.perf4j.StopWatch;
+import org.perf4j.log4j.Log4JStopWatch;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.time.Duration;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
 public class IDPConnector {
+    public enum TimingLogLevel {
+        TRACE, DEBUG, INFO, WARN, ERROR
+    }
     private static final Logger LOGGER = LoggerFactory.getLogger(IDPConnector.class);
     private static final String PATH_AUTHENTICATE = "/api/v1/authenticate/";
     private static final String PATH_AUTHORIZE = "/api/v1/authorize/";
@@ -40,24 +45,28 @@ public class IDPConnector {
     private final FailSafeHttpClient failSafeHttpClient;
     private final String baseUrl;
 
-    public IDPConnector(Client client, String idpBaseUrl) {
-        this(FailSafeHttpClient.create(client, RETRY_POLICY), idpBaseUrl);
+    public IDPConnector(Client client, UserAgent userAgent, String baseUrl) {
+        this(FailSafeHttpClient.create(client, userAgent, RETRY_POLICY), baseUrl);
     }
 
-    public IDPConnector(Client client, String idpBaseUrl, int cacheAge) {
-        this(FailSafeHttpClient.create(client, RETRY_POLICY), idpBaseUrl, cacheAge);
+    public IDPConnector(Client client, UserAgent userAgent, String baseUrl, int cacheAge) {
+        this(FailSafeHttpClient.create(client, userAgent, RETRY_POLICY), baseUrl, cacheAge);
     }
 
-    public IDPConnector(FailSafeHttpClient failSafeHttpClient, String idpBaseUrl) {
-        this.failSafeHttpClient = InvariantUtil.checkNotNullOrThrow(failSafeHttpClient, "failSafeHttpClient");
-        this.baseUrl = InvariantUtil.checkNotNullNotEmptyOrThrow(idpBaseUrl, "idpBaseUrl");
+    public IDPConnector(FailSafeHttpClient failSafeHttpClient, String baseUrl) {
+        Objects.requireNonNull(failSafeHttpClient, "failSafeHttpClient");
+        Objects.requireNonNull(baseUrl, "baseUrl");
+        this.failSafeHttpClient = failSafeHttpClient;
+        this.baseUrl = baseUrl;
         this.authenticateCache = new PassiveExpiringMap<>(MAX_CACHE_AGE, TimeUnit.HOURS);
         this.authorizeCache = new PassiveExpiringMap<>(MAX_CACHE_AGE, TimeUnit.HOURS);
     }
 
-    public IDPConnector(FailSafeHttpClient failSafeHttpClient, String idpBaseUrl, int cacheAge) {
-        this.failSafeHttpClient = InvariantUtil.checkNotNullOrThrow(failSafeHttpClient, "failSafeHttpClient");
-        this.baseUrl = InvariantUtil.checkNotNullNotEmptyOrThrow(idpBaseUrl, "idpBaseUrl");
+    public IDPConnector(FailSafeHttpClient failSafeHttpClient, String baseUrl, int cacheAge) {
+        Objects.requireNonNull(failSafeHttpClient, "failSafeHttpClient");
+        Objects.requireNonNull(baseUrl, "baseUrl");
+        this.failSafeHttpClient = failSafeHttpClient;
+        this.baseUrl = baseUrl;
         this.authenticateCache = new PassiveExpiringMap<>(cacheAge, TimeUnit.HOURS);
         this.authorizeCache = new PassiveExpiringMap<>(cacheAge, TimeUnit.HOURS);
     }
@@ -71,9 +80,9 @@ public class IDPConnector {
     }
 
     public boolean authenticate(final String user, final String group, final String password) throws IDPConnectorException {
-        InvariantUtil.checkNotNullNotEmptyOrThrow(user, "user");
-        InvariantUtil.checkNotNullNotEmptyOrThrow(group, "group");
-        InvariantUtil.checkNotNullNotEmptyOrThrow(password, "password");
+        checkNotNullOrEmpty(user, "user");
+        checkNotNullOrEmpty(group, "group");
+        checkNotNullOrEmpty(password, "password");
 
         final String cacheKey = createNetpunktCacheKey(user, group, password);
         AuthenticateResponse authenticateResponse = authenticateCache.get(cacheKey);
@@ -94,9 +103,9 @@ public class IDPConnector {
     }
 
     public RightSet lookupRight(final String user, final String group, final String password) throws IDPConnectorException {
-        InvariantUtil.checkNotNullNotEmptyOrThrow(user, "user");
-        InvariantUtil.checkNotNullNotEmptyOrThrow(group, "group");
-        InvariantUtil.checkNotNullNotEmptyOrThrow(password, "password");
+        checkNotNullOrEmpty(user, "user");
+        checkNotNullOrEmpty(group, "group");
+        checkNotNullOrEmpty(password, "password");
 
         final String cacheKey = createNetpunktCacheKey(user, group, password);
         AuthorizeResponse authorizeResponse = this.authorizeCache.get(cacheKey);
@@ -126,7 +135,7 @@ public class IDPConnector {
     private <T> T postRequest(String basePath,
                               NetpunktTripleDTO data,
                               Class<T> type) throws IDPConnectorException {
-        final Stopwatch stopwatch = new Stopwatch();
+        final StopWatch watch = new Log4JStopWatch();
         try {
             final HttpPost httpPost = new HttpPost(failSafeHttpClient)
                     .withBaseUrl(baseUrl)
@@ -137,9 +146,7 @@ public class IDPConnector {
             assertResponseStatus(response, Response.Status.OK);
             return readResponseEntity(response, type);
         } finally {
-            LOGGER.info("POST {} took {} milliseconds",
-                    basePath,
-                    stopwatch.getElapsedTime(TimeUnit.MILLISECONDS));
+            watch.stop("POST " + basePath);
         }
     }
 
@@ -168,6 +175,13 @@ public class IDPConnector {
                     String.format("IDP service returned with null-valued %s entity", type.getName()));
         }
         return entity;
+    }
+
+    private void checkNotNullOrEmpty(String value, String name) {
+        Objects.requireNonNull(value, name);
+        if (value.isEmpty()) {
+            throw new IllegalArgumentException(name + " must not be empty");
+        }
     }
 
     public class RightSet {

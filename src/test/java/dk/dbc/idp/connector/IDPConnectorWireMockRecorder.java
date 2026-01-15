@@ -1,5 +1,7 @@
 package dk.dbc.idp.connector;
 
+import dk.dbc.commons.useragent.UserAgent;
+
 public class IDPConnectorWireMockRecorder {
     /*
         Steps to reproduce wiremock recording:
@@ -13,8 +15,9 @@ public class IDPConnectorWireMockRecorder {
      */
 
     public static void main(String[] args) throws Exception {
+        final UserAgent userAgent = new UserAgent("IDPConnectorWireMockRecorder");
         IDPConnectorTest.connector = new IDPConnector(
-                IDPConnectorTest.CLIENT, "http://localhost:8080");
+                IDPConnectorTest.CLIENT, userAgent,"http://localhost:8080");
 
         final IDPConnectorTest idpConnectorTest = new IDPConnectorTest();
 
